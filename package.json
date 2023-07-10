@@ -1,0 +1,30 @@
+{
+  "name": "mvim",
+  "version": "0.0.1",
+  "description": "",
+  "main": "src/background.ts",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --config webpack.config.js",
+    "watch": "watch \"npm run build\" src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/a10x/mvim.git"
+  },
+  "author": "a10x",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/a10x/mvim/issues"
+  },
+  "homepage": "https://github.com/a10x/mvim#readme",
+  "devDependencies": {
+    "chrome-types": "^0.1.213",
+    "ts-loader": "^9.4.4",
+    "typescript": "^5.1.6",
+    "watch": "^1.0.2",
+    "webpack": "^5.88.1",
+    "webpack-cli": "^5.1.4"
+  }
+}

@@ -1,0 +1,16 @@
+{
+   "compilerOptions": {
+      "strict": true,
+      "module": "es2022",
+      "target": "es2017",
+      "esModuleInterop": true,
+      "sourceMap": true,
+		"removeComments": true,
+      "rootDir": "src",
+		"noImplicitAny": true,
+      "outDir": "out/",
+      "noEmitOnError": true,
+      "typeRoots": ["./node_modules/@types"]
+   },
+	"include": ["src/**/*", "./node_modules/chrome-types"]
+}
