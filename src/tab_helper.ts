@@ -69,7 +69,6 @@ export class ActiveTabsManager{
 		for(const tab of tabs){
 			const activeTab = new ActiveTab(tab.id, tab.index);
 			this.addWindow(new OpenWindow(tab.windowId, activeTab));
-			console.log("Window added");
 		}
 
 		const currentWindow = await Utils.resolvePromise(chrome.windows.getCurrent());
@@ -93,6 +92,7 @@ export class ActiveTabsManager{
 			return sameWindow;
 		});
 	}
+	
 
 	private getActiveTabOf(windowId?: ActiveId) : ActiveTab{
 		//TODO: Implement the ability to choose which window's active tab to get
@@ -122,10 +122,18 @@ export class ActiveTabsManager{
 
 		const newActiveTab = new ActiveTab(tabId, tab.index);
 		this.windows.push(new OpenWindow(windowId, newActiveTab));
-		console.log("New Window Added");
+
+		const currentWindow = await chrome.windows.getCurrent();
+
+		if(currentWindow.id === windowId){
+			this.onActiveWindowChange(windowId);
+		}
 	}
 
-	public onActiveWindowChange(windowId: number){
+	public onActiveWindowChange(windowId: ActiveId){
+		
+		if(this.activeWindowIndex !== -1 && this.windows[this.activeWindowIndex].windowId === windowId) return;
+
 		for(let i = 0; i < this.windows.length; ++i){
 			if(this.windows[i].windowId === windowId){
 				this.activeWindowIndex = i;
@@ -133,6 +141,10 @@ export class ActiveTabsManager{
 			}
 		}
 		this.activeWindowIndex = -1;
+	}
+
+	public onWindowRemove(windowId: ActiveId){
+		this.removeWindow(windowId);
 	}
 
 	public async debugInfo(){
