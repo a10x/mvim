@@ -4,7 +4,7 @@ import url from 'url';
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 export default {
-	mode: "development",
+	mode: "production",
 	entry: {
 		background: path.resolve("src/", "background.ts"),
 		//popup: path.resolve("src/", "popup.ts")
