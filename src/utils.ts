@@ -1,4 +1,4 @@
-export class Utils{
+export default class Utils{
 
 	public static async resolvePromise<T>(promise: Promise<T>){
 		let value: T | undefined;

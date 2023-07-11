@@ -1,4 +1,4 @@
-import { Utils } from "./utils";
+import Utils from "./utils";
 
 export type ActiveId = number | undefined;
 
@@ -35,9 +35,19 @@ export class ActiveTabsManager{
 	private windows: OpenWindow[];
 	private activeWindowIndex: number;
 
+	private static _instance: ActiveTabsManager;
+
 	constructor(){
 		this.windows = [];
 		this.activeWindowIndex = -1;
+	}
+
+	public static async get(){
+		if(this._instance === undefined){
+			this._instance = new ActiveTabsManager();
+			await this._instance.sync();
+		}
+		return this._instance;
 	}
 
 	public setActiveWindow(windowId: ActiveId) : boolean{
@@ -48,6 +58,23 @@ export class ActiveTabsManager{
 			}
 		}
 		return false;
+	}
+
+	public isEmpty(){return !(this.windows.length > 0);}
+
+	public async sync(){
+		const tabs = await Utils.resolvePromise(chrome.tabs.query({active: true, windowType: "normal"}));
+		if(!tabs) return;
+
+		for(const tab of tabs){
+			const activeTab = new ActiveTab(tab.id, tab.index);
+			this.addWindow(new OpenWindow(tab.windowId, activeTab));
+			console.log("Window added");
+		}
+
+		const currentWindow = await Utils.resolvePromise(chrome.windows.getCurrent());
+		if(!currentWindow) return;
+		this.onActiveWindowChange(currentWindow.id!);
 	}
 
 	public addWindow(window: OpenWindow){
@@ -77,24 +104,25 @@ export class ActiveTabsManager{
 		this.windows[this.activeWindowIndex].setActiveTab(activeTab);
 	}
 
-	public async onActiveTabChange(tabId: number, windowId: number){
+	public async onActiveTabChange(tabId: ActiveId, windowId: ActiveId){
 		for(const window of this.windows){
 			if(window.windowId !== windowId) continue;
 			if(window.activeTab.tabId === tabId) return;
 
-			const tab = await Utils.resolvePromise(chrome.tabs.get(tabId));
-			if(tab !== undefined) window.setActiveTab(new ActiveTab(tabId, tab.index));
+			const tab = await Utils.resolvePromise(chrome.tabs.get(tabId!));
+			if(tab)window.setActiveTab(new ActiveTab(tabId, tab.index));
 			return;
 		}
 
-		const newWindow = await Utils.resolvePromise(chrome.windows.get(windowId, {windowTypes: ["normal"]}));
-		if(newWindow === undefined) return;
+		const newWindow = await Utils.resolvePromise(chrome.windows.get(windowId!, {windowTypes: ["normal"]}));
+		if(!newWindow) return;
 
-		const tab = await chrome.tabs.get(tabId);
-		if(tab === undefined) return;
+		const tab = await chrome.tabs.get(tabId!);
+		if(!tab) return;
 
 		const newActiveTab = new ActiveTab(tabId, tab.index);
 		this.windows.push(new OpenWindow(windowId, newActiveTab));
+		console.log("New Window Added");
 	}
 
 	public onActiveWindowChange(windowId: number){
@@ -107,11 +135,21 @@ export class ActiveTabsManager{
 		this.activeWindowIndex = -1;
 	}
 
-	public debugInfo(){
+	public async debugInfo(){
+		console.log("-------------------------------------------------");
 		if(this.activeWindowIndex === -1)
 			console.log("No active window");
-		else
-			console.log("Active Window: " + this.windows[this.activeWindowIndex]);
+		else{
+			console.log("Active Window: " + this.windows[this.activeWindowIndex].windowId);
+			
+			console.log("==================================================")
+			console.log("---------------------Windows--------------------- ")
+			for(const window of this.windows){
+				console.log("Window: " + window.windowId);
+				const tab = await chrome.tabs.get(window.activeTab.tabId!);
+				console.log("Active Tab title: " + tab.title);
+			}
+		}
+		console.log("-------------------------------------------------");
 	}
 }
-

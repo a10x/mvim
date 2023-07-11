@@ -4,7 +4,8 @@ import url from 'url';
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
 export default {
-	mode: "production",
+	mode: "development",
+	devtool: "cheap-module-source-map",
 	entry: {
 		background: path.resolve("src/", "background.ts"),
 		utils: path.resolve("src/", "utils.ts")
